@@ -142,6 +142,42 @@ void buscarTodos(int cpf) {
     }
 }
 
+void remover(int cpf) {
+    int id = funcaoHash(cpf);
+    No* atual = tabela[id];
+    No* anterior = NULL;
+    int removidos = 0;
+
+    while (atual != NULL) {
+        if (atual->p.cpf == cpf) {
+            No* temp = atual;
+
+            if (anterior == NULL) {
+                tabela[id] = atual->proximo;  // remove primeiro da lista
+            }
+            else {
+                anterior->proximo = atual->proximo;  // remove no meio ou fim
+            }
+
+            atual = atual->proximo;
+            free(temp);
+            removidos++;
+        }
+        else {
+            anterior = atual;
+            atual = atual->proximo;
+        }
+    }
+
+    if (removidos > 0) {
+        printf("\n%d prontuario(s) com CPF %d removido(s) da tabela.\n", removidos, cpf);
+    }
+    else {
+        printf("\nNenhum prontuario encontrado com o CPF informado.\n");
+    }
+}
+
+
 // Imprime todos os prontuarios da tabela
 void imprimirTabela() {
     printf("\n--- Todos os Prontuarios ---\n");
@@ -170,6 +206,7 @@ int main() {
         printf("1 - Cadastrar paciente\n");
         printf("2 - Buscar por CPF\n");
         printf("3 - Listar todos os prontuarios\n");
+        printf("4 - Remover prontuario por CPF\n");
         printf("0 - Sair\n");
         printf("Escolha: ");
         scanf_s("%d", &opcao);
@@ -187,6 +224,12 @@ int main() {
             break;
         case 3:
             imprimirTabela();
+            break;
+        case 4:
+            printf("\nDigite o CPF do paciente a ser removido: ");
+            scanf_s("%d", &cpf);
+            getchar();
+            remover(cpf);
             break;
         case 0:
             printf("Encerrando...\n");
