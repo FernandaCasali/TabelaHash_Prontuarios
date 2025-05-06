@@ -59,7 +59,7 @@ Prontuario lerProntuario() {
     getchar();
     printf("Data de Nascimento:\n");
     p.dataNasc = lerData();
-    printf("Hist�rico Medico (resumo): ");
+    printf("Historico Medico (resumo): ");
     fgets(p.historico, 300, stdin);
     return p;
 }
@@ -80,7 +80,24 @@ void inserir() {
     Prontuario p = lerProntuario();
     int id = funcaoHash(p.cpf);
 
-    // Criar novo no da lista encadeada:
+    // Verifica se já existe prontuário com esse CPF
+    No* atual = tabela[id];
+    while (atual != NULL) {
+        if (atual->p.cpf == p.cpf) {
+            printf("\nEsse CPF ja existe. Deseja adicionar outro prontuario para o mesmo CPF? (s/n): ");
+            char resposta;
+            scanf_s(" %c", &resposta, 1);
+            getchar();
+            if (resposta != 's' && resposta != 'S') {
+                printf("Insercao cancelada.\n");
+                return;
+            }
+            break;
+        }
+        atual = atual->proximo;
+    }
+
+    // Criar novo nó da lista encadeada:
     No* novo = (No*)malloc(sizeof(No));
     if (novo == NULL) {
         printf("Erro ao alocar memoria!\n");
@@ -88,11 +105,12 @@ void inserir() {
     }
 
     novo->p = p;
-    novo->proximo = tabela[id];  // Insere no inicio da lista da posicao id
+    novo->proximo = tabela[id];  // Insere no início da lista
     tabela[id] = novo;
 
     printf("\nProntuario inserido na posicao %d da tabela (encadeado).\n", id);
 }
+
 
 Prontuario* buscar(int cpf) {
     int id = funcaoHash(cpf);
@@ -164,7 +182,7 @@ int main() {
             printf("Encerrando...\n");
             break;
         default:
-            printf("Op��o invalida!\n");
+            printf("Opcao invalida!\n");
         }
 
     } while (opcao != 0);
