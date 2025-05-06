@@ -17,23 +17,19 @@ typedef struct {
     char historico[300];
 } Prontuario;
 
-// Estrutura de nó para lista encadeada (tratamento de colisoes)
 typedef struct no {
     Prontuario p;
     struct no* proximo;
 } No;
 
-// Tabela hash com listas encadeadas para cada posicao
 No* tabela[TAM];
 
 // --------------------- Funcoes Auxiliares -----------------------
 
-// Imprime uma data no formato dd/mm/aaaa
 void imprimirData(Data d) {
     printf("%02d/%02d/%04d\n", d.dia, d.mes, d.ano);
 }
 
-// Imprime os dados de um prontuario
 void imprimirProntuario(Prontuario p) {
     printf("\nNome: %s", p.nome);
     printf("CPF: %d\n", p.cpf);
@@ -42,7 +38,6 @@ void imprimirProntuario(Prontuario p) {
     printf("Historico Medico: %s\n", p.historico);
 }
 
-// Le uma data do usuario
 Data lerData() {
     Data d;
     printf("Digite a data (dd mm aaaa): ");
@@ -51,37 +46,18 @@ Data lerData() {
     return d;
 }
 
-// Le os dados de um prontuario do usuario
-Prontuario lerProntuario() {
-    Prontuario p;
-    printf("\n\n--- Cadastro de Paciente ---\n");
-    printf("Nome: ");
-    fgets(p.nome, 50, stdin);
-    printf("CPF: ");
-    scanf_s("%d", &p.cpf);
-    getchar();
-    printf("Data de Nascimento:\n");
-    p.dataNasc = lerData();
-    printf("Historico Medico (resumo): ");
-    fgets(p.historico, 300, stdin);
-    return p;
-}
+// --------------------- Tabela Hash -----------------------
 
-// --------------------- Tabela Hash com Lista Encadeada -----------------------
-
-// Funcao hash baseada no CPF
 int funcaoHash(int cpf) {
     return cpf % TAM;
 }
 
-// Inicializa a tabela com NULL
 void inicializarTabela() {
     for (int i = 0; i < TAM; i++) {
         tabela[i] = NULL;
     }
 }
 
-// Atualiza os dados de um prontuario com base no CPF
 void atualizar(int cpf) {
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
@@ -127,38 +103,57 @@ void atualizar(int cpf) {
     printf("\nNenhum prontuario encontrado com o CPF informado.\n");
 }
 
-// Insere um prontuario na tabela hash
 void inserir() {
-    Prontuario p = lerProntuario();
-    int id = funcaoHash(p.cpf);
+    int cpf;
+    printf("\nDigite o CPF do paciente: ");
+    scanf_s("%d", &cpf);
+    getchar();
 
-    // Verifica se já existe um prontuário com o mesmo CPF
+    int id = funcaoHash(cpf);
     No* atual = tabela[id];
+    int existe = 0;
+
     while (atual != NULL) {
-        if (atual->p.cpf == p.cpf) {
-            printf("\nEsse CPF ja existe. Deseja:\n");
-            printf("a - Atualizar prontuario existente\n");
-            printf("b - Adicionar novo prontuario (mantendo o existente)\n");
-            printf("Escolha (a/b): ");
-
-            char escolha;
-            scanf_s(" %c", &escolha, 1);
-            getchar();
-
-            if (escolha == 'a' || escolha == 'A') {
-                atualizar(p.cpf);
-                return;
-            }
-            else if (escolha != 'b' && escolha != 'B') {
-                printf("Insercao cancelada.\n");
-                return;
-            }
-            break; // Se continuar, insere um novo
+        if (atual->p.cpf == cpf) {
+            existe = 1;
+            break;
         }
         atual = atual->proximo;
     }
 
-    // Cria novo nó da lista encadeada
+    if (existe) {
+        printf("\nEsse CPF ja existe. Deseja:\n");
+        printf("a - Atualizar prontuario existente\n");
+        printf("b - Adicionar novo prontuario (mantendo o existente)\n");
+        printf("Escolha (a/b): ");
+
+        char escolha;
+        scanf_s(" %c", &escolha, 1);
+        getchar();
+
+        if (escolha == 'a' || escolha == 'A') {
+            atualizar(cpf);
+            return;
+        }
+        else if (escolha != 'b' && escolha != 'B') {
+            printf("Insercao cancelada.\n");
+            return;
+        }
+    }
+
+    // Criar novo prontuario
+    Prontuario p;
+    p.cpf = cpf;
+
+    printf("Nome: ");
+    fgets(p.nome, 50, stdin);
+
+    printf("Data de Nascimento:\n");
+    p.dataNasc = lerData();
+
+    printf("Historico Medico (resumo): ");
+    fgets(p.historico, 300, stdin);
+
     No* novo = (No*)malloc(sizeof(No));
     if (novo == NULL) {
         printf("Erro ao alocar memoria!\n");
@@ -172,9 +167,6 @@ void inserir() {
     printf("\nProntuario inserido na posicao %d da tabela (encadeado).\n", id);
 }
 
-
-
-// Busca e imprime todos os prontuarios com o CPF informado
 void buscarTodos(int cpf) {
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
@@ -197,7 +189,6 @@ void buscarTodos(int cpf) {
     }
 }
 
-//Remove os dados do prontuario com base no CPF
 void remover(int cpf) {
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
@@ -209,10 +200,10 @@ void remover(int cpf) {
             No* temp = atual;
 
             if (anterior == NULL) {
-                tabela[id] = atual->proximo;  // remove primeiro da lista
+                tabela[id] = atual->proximo;
             }
             else {
-                anterior->proximo = atual->proximo;  // remove no meio ou fim
+                anterior->proximo = atual->proximo;
             }
 
             atual = atual->proximo;
@@ -233,8 +224,6 @@ void remover(int cpf) {
     }
 }
 
-
-// Imprime todos os prontuarios da tabela
 void imprimirTabela() {
     printf("\n--- Todos os Prontuarios ---\n");
     for (int i = 0; i < TAM; i++) {
@@ -252,12 +241,10 @@ void imprimirTabela() {
 
 int main() {
     int opcao, cpf;
-    Prontuario* resultado;
 
     inicializarTabela();
 
     do {
-        // Menu principal do sistema
         printf("\n\n--- MENU ---\n");
         printf("1 - Cadastrar paciente\n");
         printf("2 - Buscar por CPF\n");
@@ -294,7 +281,6 @@ int main() {
             getchar();
             atualizar(cpf);
             break;
-
         case 0:
             printf("Encerrando...\n");
             break;
