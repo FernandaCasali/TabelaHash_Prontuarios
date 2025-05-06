@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define TAM 15
 
@@ -8,177 +9,141 @@ typedef struct {
 } Data;
 
 typedef struct {
-    char rua[50];
-    char bairro[50];
-    char cidade[50];
-    char pais[50];
-    int num, cep;
-} Endereco;
-
-typedef struct {
-    int codigo;
-    Data dataAss;
-    char cargo[50];
-    float salario;
-} Contrato;
-
-typedef struct {
-    char nome[50];
     int cpf;
+    char nome[50];
     Data dataNas;
-    Endereco end;
-    Contrato contr;
-} Pessoa;
+    char historico[300];
+} Prontuario;
 
-// ---------------- Funções de Impressão ----------------
+// ---------------- Funcoes auxiliares ----------------
 
 void imprimirData(Data d) {
     printf("%02d/%02d/%04d\n", d.dia, d.mes, d.ano);
 }
 
-void imprimirEndereco(Endereco end) {
-    printf("\tEndereco:\n");
-    printf("\t\tRua: %s", end.rua);
-    printf("\t\tBairro: %s", end.bairro);
-    printf("\t\tCidade: %s", end.cidade);
-    printf("\t\tPais: %s", end.pais);
-    printf("\t\tNumero: %d\n", end.num);
-    printf("\t\tCEP: %d\n", end.cep);
-}
-
-void imprimirContrato(Contrato c) {
-    printf("\tContrato %d:\n", c.codigo);
-    printf("\t\tCargo: %s", c.cargo);
-    printf("\t\tSalario: R$%.2f\n", c.salario);
-    printf("\t\tData de assinatura: ");
-    imprimirData(c.dataAss);
-}
-
-void imprimirPessoa(Pessoa p) {
+void imprimirProntuario(Prontuario p) {
     printf("\n\tNome: %s", p.nome);
-    printf("\tCpf: %d\n", p.cpf);
+    printf("\tCPF: %d\n", p.cpf);
     printf("\tData de nascimento: ");
     imprimirData(p.dataNas);
-    imprimirEndereco(p.end);
-    imprimirContrato(p.contr);
+    printf("\tHistorico: %s\n", p.historico);
 }
-
-// ---------------- Funções de Leitura ----------------
 
 Data lerData(char texto[]) {
     Data d;
     printf("%s", texto);
-    scanf_s("%d%d%d", &d.dia, &d.mes, &d.ano);
-    (void)getchar(); // limpa o ENTER do teclado
+    scanf_s("%d %d %d", &d.dia, &d.mes, &d.ano);
+    getchar();
     return d;
 }
 
-Endereco lerEndereco() {
-    Endereco end;
-    char buffer[100];
-
-    printf("\nRua: ");
-    fgets(end.rua, sizeof(end.rua), stdin);
-
-    printf("Bairro: ");
-    fgets(end.bairro, sizeof(end.bairro), stdin);
-
-    printf("Cidade: ");
-    fgets(end.cidade, sizeof(end.cidade), stdin);
-
-    printf("Pais: ");
-    fgets(end.pais, sizeof(end.pais), stdin);
-
-    printf("Numero: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    scanf_s(buffer, "%d", &end.num);
-
-    printf("CEP: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    scanf_s(buffer, "%d", &end.cep);
-
-    return end;
-}
-
-Contrato lerContrato() {
-    Contrato c;
-    char buffer[100];
-
-    printf("\nCodigo do contrato: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    scanf_s(buffer, "%d", &c.codigo);
-
-    c.dataAss = lerData("Digite a data de assinatura do contrato (dd mm aaaa): ");
-
-    printf("Cargo: ");
-    fgets(c.cargo, sizeof(c.cargo), stdin);
-
-    printf("Salario: R$");
-    fgets(buffer, sizeof(buffer), stdin);
-    scanf_s(buffer, "%f", &c.salario);
-
-    return c;
-}
-
-Pessoa lerPessoa() {
-    Pessoa p;
-    char buffer[100];
-
+Prontuario lerProntuario() {
+    Prontuario p;
     printf("\nNome: ");
     fgets(p.nome, sizeof(p.nome), stdin);
-
-    printf("Cpf: ");
-    fgets(buffer, sizeof(buffer), stdin);
-    scanf_s(buffer, "%d", &p.cpf);
-
+    printf("CPF: ");
+    scanf_s("%d", &p.cpf);
+    getchar();
     p.dataNas = lerData("Digite a data de nascimento (dd mm aaaa): ");
-
-    p.contr = lerContrato();
-
-    p.end = lerEndereco();
-
+    printf("Historico medico (resumo): ");
+    fgets(p.historico, sizeof(p.historico), stdin);
     return p;
 }
 
-// ---------------- Funções da Tabela ----------------
+// ---------------- Hash ----------------
 
-void inicializarTabela(Pessoa t[]) {
+int funcaoHash(int chave) {
+    return chave % TAM;
+}
+
+void inicializarTabela(Prontuario t[]) {
     for (int i = 0; i < TAM; i++) {
-        t[i].cpf = 0;
+        t[i].cpf = 0; // 0 = vaga vazia
     }
 }
 
-// Função de inserção sequencial a partir da posição 0
-void inserirSequencial(Pessoa t[]) {
-    Pessoa p = lerPessoa();
-    int id = 0;
-    while (id < TAM && t[id].cpf != 0) { // Encontra a próxima posição livre a partir do 0
-        id++;
+void inserir(Prontuario t[]) {
+    Prontuario p = lerProntuario();
+    int id = funcaoHash(p.cpf);
+    int original = id;
+    int inserido = 0;
+
+    while (t[id].cpf != 0 && t[id].cpf != -1) {
+        if (t[id].cpf == p.cpf) {
+            printf("\nCPF ja existente. Atualizando prontuario...\n");
+            t[id] = p;
+            inserido = 1;
+            break;
+        }
+        id = (id + 1) % TAM;
+        if (id == original) {
+            printf("\nTabela cheia! Nao foi possivel inserir.\n");
+            return;
+        }
     }
-    if (id < TAM) {
+
+    if (!inserido) {
         t[id] = p;
-    }
-    else {
-        printf("Tabela cheia! Não é possível inserir mais registros.\n");
+        printf("\nProntuario inserido na posicao %d.\n", id);
     }
 }
 
-// Função de busca ajustada para uma tabela sequencial
-Pessoa* buscaSequencial(Pessoa t[], int chave) {
-    for (int id = 0; id < TAM; id++) {
-        if (t[id].cpf == chave) {
-            printf("\nIndice encontrado: %d\n", id);
+Prontuario* buscar(Prontuario t[], int cpf) {
+    int id = funcaoHash(cpf);
+    int original = id;
+
+    while (t[id].cpf != 0) {
+        if (t[id].cpf == cpf) {
             return &t[id];
         }
+        id = (id + 1) % TAM;
+        if (id == original)
+            break;
     }
     return NULL;
 }
 
-void imprimir(Pessoa t[]) {
+void atualizar(Prontuario t[]) {
+    int cpf;
+    printf("\nDigite o CPF para atualizar: ");
+    scanf_s("%d", &cpf);
+    getchar();
+
+    Prontuario* p = buscar(t, cpf);
+    if (p) {
+        printf("\nAtualizando prontuario...\n");
+        *p = lerProntuario();
+    }
+    else {
+        printf("\nCPF nao encontrado!\n");
+    }
+}
+
+void remover(Prontuario t[]) {
+    int cpf;
+    printf("\nDigite o CPF para remover: ");
+    scanf_s("%d", &cpf);
+    getchar();
+
+    Prontuario* p = buscar(t, cpf);
+    if (p) {
+        p->cpf = -1; // Marca como removido
+        printf("\nProntuario removido com sucesso.\n");
+    }
+    else {
+        printf("\nCPF nao encontrado!\n");
+    }
+}
+
+void imprimir(Prontuario t[]) {
     for (int i = 0; i < TAM; i++) {
-        printf("%d\n", i);
-        if (t[i].cpf != 0)
-            imprimirPessoa(t[i]);
+        printf("%d:\n", i);
+        if (t[i].cpf == 0)
+            printf("\t<vaga vazia>\n");
+        else if (t[i].cpf == -1)
+            printf("\t<removido>\n");
+        else
+            imprimirProntuario(t[i]);
         printf("----------------------\n");
     }
 }
@@ -187,42 +152,49 @@ void imprimir(Pessoa t[]) {
 
 int main() {
     int opc, valor;
-    Pessoa* buscar;
-    Pessoa tabela[TAM];
+    Prontuario* encontrado;
+    Prontuario tabela[TAM];
 
     inicializarTabela(tabela);
 
     do {
-        printf("\n\t0 - Sair\n\t1 - Inserir\n\t2 - Buscar\n\t3 - Imprimir\n");
+		printf("\n\t------MENU------");
+        printf("\n\t0 - Sair\n\t1 - Inserir prontuario\n\t2 - Buscar por CPF\n\t3 - Imprimir tabela\n\t4 - Atualizar prontuario\n\t5 - Remover prontuario\n");
+		printf("\nEscolha uma opcao: ");
         scanf_s("%d", &opc);
-        (void)getchar(); // Limpa o ENTER depois de scanf!
+        getchar();
 
         switch (opc) {
         case 1:
-            inserirSequencial(tabela); // Alterado para a nova função
+            inserir(tabela);
             break;
         case 2:
-            printf("\tQual cpf deseja buscar? ");
+            printf("\nDigite o CPF a buscar: ");
             scanf_s("%d", &valor);
-            (void)getchar();
-            buscar = buscaSequencial(tabela, valor); // Alterado para a nova função
-            if (buscar) {
-                printf("\tCpf encontrado: %d\n", buscar->cpf);
-                imprimirPessoa(*buscar);
+            getchar();
+            encontrado = buscar(tabela, valor);
+            if (encontrado) {
+                printf("\nProntuario encontrado:\n");
+                imprimirProntuario(*encontrado);
             }
             else {
-                printf("\tCpf nao encontrado!\n");
+                printf("\nCPF nao encontrado!\n");
             }
             break;
         case 3:
             imprimir(tabela);
             break;
+        case 4:
+            atualizar(tabela);
+            break;
+        case 5:
+            remover(tabela);
+            break;
         case 0:
-            printf("Encerrando programa...\n");
+            printf("Encerrando...\n");
             break;
         default:
-            printf("Opcao Invalida!\n");
-            break;
+            printf("Opcao invalida!\n");
         }
     } while (opc != 0);
 
