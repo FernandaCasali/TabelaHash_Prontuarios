@@ -136,8 +136,9 @@ void remover(Prontuario t[]) {
 }
 
 void imprimir(Prontuario t[]) {
+	printf("\n\n\tTabela de Prontuarios\n");
     for (int i = 0; i < TAM; i++) {
-        printf("%d:\n", i);
+        printf("\n%d:\n", i);
         if (t[i].cpf == 0)
             printf("\t<vaga vazia>\n");
         else if (t[i].cpf == -1)
