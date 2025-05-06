@@ -81,42 +81,97 @@ void inicializarTabela() {
     }
 }
 
+// Atualiza os dados de um prontuario com base no CPF
+void atualizar(int cpf) {
+    int id = funcaoHash(cpf);
+    No* atual = tabela[id];
+
+    while (atual != NULL) {
+        if (atual->p.cpf == cpf) {
+            printf("\n--- Atualizar Prontuario ---\n");
+
+            printf("Nome atual: %s", atual->p.nome);
+            printf("Deseja alterar o nome? (s/n): ");
+            char opcao;
+            scanf_s(" %c", &opcao, 1);
+            getchar();
+            if (opcao == 's' || opcao == 'S') {
+                printf("Novo nome: ");
+                fgets(atual->p.nome, 50, stdin);
+            }
+
+            printf("Data de nascimento atual: ");
+            imprimirData(atual->p.dataNasc);
+            printf("Deseja alterar a data de nascimento? (s/n): ");
+            scanf_s(" %c", &opcao, 1);
+            getchar();
+            if (opcao == 's' || opcao == 'S') {
+                atual->p.dataNasc = lerData();
+            }
+
+            printf("Historico atual: %s", atual->p.historico);
+            printf("Deseja alterar o historico medico? (s/n): ");
+            scanf_s(" %c", &opcao, 1);
+            getchar();
+            if (opcao == 's' || opcao == 'S') {
+                printf("Novo historico: ");
+                fgets(atual->p.historico, 300, stdin);
+            }
+
+            printf("\nProntuario atualizado com sucesso!\n");
+            return;
+        }
+        atual = atual->proximo;
+    }
+
+    printf("\nNenhum prontuario encontrado com o CPF informado.\n");
+}
+
 // Insere um prontuario na tabela hash
 void inserir() {
     Prontuario p = lerProntuario();
     int id = funcaoHash(p.cpf);
 
-    // Verifica se ja existe um prontuario com o mesmo CPF
+    // Verifica se já existe um prontuário com o mesmo CPF
     No* atual = tabela[id];
     while (atual != NULL) {
         if (atual->p.cpf == p.cpf) {
-            printf("\nEsse CPF ja existe. Deseja adicionar outro prontuario para o mesmo CPF? (s/n): ");
-            char resposta;
-            scanf_s(" %c", &resposta, 1);
+            printf("\nEsse CPF ja existe. Deseja:\n");
+            printf("a - Atualizar prontuario existente\n");
+            printf("b - Adicionar novo prontuario (mantendo o existente)\n");
+            printf("Escolha (a/b): ");
+
+            char escolha;
+            scanf_s(" %c", &escolha, 1);
             getchar();
-            if (resposta != 's' && resposta != 'S') {
+
+            if (escolha == 'a' || escolha == 'A') {
+                atualizar(p.cpf);
+                return;
+            }
+            else if (escolha != 'b' && escolha != 'B') {
                 printf("Insercao cancelada.\n");
                 return;
             }
-            break;
+            break; // Se continuar, insere um novo
         }
         atual = atual->proximo;
     }
 
-    // Cria novo no da lista encadeada
+    // Cria novo nó da lista encadeada
     No* novo = (No*)malloc(sizeof(No));
     if (novo == NULL) {
         printf("Erro ao alocar memoria!\n");
         return;
     }
 
-    // Insere no inicio da lista
     novo->p = p;
     novo->proximo = tabela[id];
     tabela[id] = novo;
 
     printf("\nProntuario inserido na posicao %d da tabela (encadeado).\n", id);
 }
+
 
 
 // Busca e imprime todos os prontuarios com o CPF informado
@@ -142,6 +197,7 @@ void buscarTodos(int cpf) {
     }
 }
 
+//Remove os dados do prontuario com base no CPF
 void remover(int cpf) {
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
@@ -207,6 +263,7 @@ int main() {
         printf("2 - Buscar por CPF\n");
         printf("3 - Listar todos os prontuarios\n");
         printf("4 - Remover prontuario por CPF\n");
+        printf("5 - Atualizar prontuario por CPF\n");
         printf("0 - Sair\n");
         printf("Escolha: ");
         scanf_s("%d", &opcao);
@@ -231,6 +288,13 @@ int main() {
             getchar();
             remover(cpf);
             break;
+        case 5:
+            printf("Digite o CPF do paciente a ser atualizado: ");
+            scanf_s("%d", &cpf);
+            getchar();
+            atualizar(cpf);
+            break;
+
         case 0:
             printf("Encerrando...\n");
             break;
