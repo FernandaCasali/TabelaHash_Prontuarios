@@ -46,7 +46,7 @@ void atualizar(int cpf) {
             printf("Nome atual: %s", atual->p.nome);
             printf("Deseja alterar o nome? (s/n): ");
             char opcao;
-            scanf_s(" %c", &opcao);
+            scanf_s(" %c", &opcao, 1);
             getchar();
             if (opcao == 's' || opcao == 'S') {
                 printf("Novo nome: ");
@@ -84,7 +84,7 @@ void inserir() {
     int cpf;
     printf("\nDigite o CPF do paciente: ");
     scanf_s("%d", &cpf);
-    getchar();
+    getchar(); // Para limpar o buffer de entrada
 
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
@@ -105,31 +105,37 @@ void inserir() {
         printf("Escolha (a/b): ");
 
         char escolha;
-        scanf_s(" %c", &escolha);
-        getchar();
+        scanf_s(" %c", &escolha, 1); 
+        getchar();  
 
         if (escolha == 'a' || escolha == 'A') {
             atualizar(cpf);
             return;
         }
-        else if (escolha != 'b' && escolha != 'B') {
+        else if (escolha != 'b' || escolha != 'B') {
+            // Continuar com a insercao de um novo prontuario mantendo o existente
+            printf("\nAdicionando novo prontuario...\n");
+        }
+        else {
             printf("Insercao cancelada.\n");
             return;
         }
     }
 
+    // Criacao do novo prontuario
     Prontuario p;
     p.cpf = cpf;
 
     printf("Nome: ");
-    fgets(p.nome, 50, stdin);
+    fgets(p.nome, 50, stdin);  // Le o nome do paciente
 
     printf("Data de Nascimento:\n");
-    p.dataNasc = lerData();
+    p.dataNasc = lerData();  
 
     printf("Historico Medico (resumo): ");
-    fgets(p.historico, 300, stdin);
+    fgets(p.historico, 300, stdin);  
 
+    // Criacao do novo no para o prontuario
     No* novo = (No*)malloc(sizeof(No));
     if (novo == NULL) {
         printf("Erro ao alocar memoria!\n");
@@ -137,11 +143,12 @@ void inserir() {
     }
 
     novo->p = p;
-    novo->proximo = tabela[id];
-    tabela[id] = novo;
+    novo->proximo = tabela[id]; 
+    tabela[id] = novo;  // Atribui o novo no à tabela no índice devida
 
     printf("\nProntuario inserido na posicao %d da tabela (encadeado).\n", id);
 }
+
 
 void buscarTodos(int cpf) {
     int id = funcaoHash(cpf);
