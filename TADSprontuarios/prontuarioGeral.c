@@ -112,20 +112,29 @@ void inserir() {
 }
 
 
-Prontuario* buscar(int cpf) {
+void buscarTodos(int cpf) {
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
+    int encontrados = 0;
 
-    // Percorre a lista encadeada da posicao hash
+    // Percorre a lista encadeada e imprime todos os prontuários com o mesmo CPF
     while (atual != NULL) {
         if (atual->p.cpf == cpf) {
-            return &atual->p;
+            if (encontrados == 0) {
+                printf("\n--- Prontuários Encontrados ---\n");
+            }
+            imprimirProntuario(atual->p);
+            printf("----------------------\n");
+            encontrados++;
         }
         atual = atual->proximo;
     }
 
-    return NULL;
+    if (encontrados == 0) {
+        printf("Nenhum prontuário encontrado com o CPF informado.\n");
+    }
 }
+
 
 void imprimirTabela() {
     printf("\n--- Todos os Prontuarios ---\n");
@@ -166,14 +175,7 @@ int main() {
             printf("Digite o CPF do paciente: ");
             scanf_s("%d", &cpf);
             getchar();
-            resultado = buscar(cpf);
-            if (resultado != NULL) {
-                printf("\n--- Prontuario Encontrado ---\n");
-                imprimirProntuario(*resultado);
-            }
-            else {
-                printf("Prontuario nao encontrado!\n");
-            }
+            buscarTodos(cpf);
             break;
         case 3:
             imprimirTabela();
