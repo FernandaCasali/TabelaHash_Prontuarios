@@ -5,10 +5,12 @@
 
 No* tabela[TAM];
 
+// Imprime uma data no formato dd/mm/aaaa
 void imprimirData(Data d) {
     printf("%02d/%02d/%04d\n", d.dia, d.mes, d.ano);
 }
 
+// Imprime as informacoes de um prontuario
 void imprimirProntuario(Prontuario p) {
     printf("\nNome: %s", p.nome);
     printf("CPF: %d\n", p.cpf);
@@ -17,6 +19,7 @@ void imprimirProntuario(Prontuario p) {
     printf("Historico Medico: %s\n", p.historico);
 }
 
+// Le uma data do usuario
 Data lerData() {
     Data d;
     printf("Digite a data (dd mm aaaa): ");
@@ -25,16 +28,19 @@ Data lerData() {
     return d;
 }
 
+// Funcao hash para calcular o indice com base no CPF
 int funcaoHash(int cpf) {
     return cpf % TAM;
 }
 
+// Inicializa a tabela hash com NULL
 void inicializarTabela() {
     for (int i = 0; i < TAM; i++) {
         tabela[i] = NULL;
     }
 }
 
+// Atualiza um prontuario existente com base no CPF
 void atualizar(int cpf) {
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
@@ -80,6 +86,7 @@ void atualizar(int cpf) {
     printf("\nNenhum prontuario encontrado com o CPF informado.\n");
 }
 
+// Insere um novo prontuario na tabela hash
 void inserir() {
     int cpf;
     printf("\nDigite o CPF do paciente: ");
@@ -90,6 +97,7 @@ void inserir() {
     No* atual = tabela[id];
     int existe = 0;
 
+    // Verifica se o CPF ja existe na lista encadeada
     while (atual != NULL) {
         if (atual->p.cpf == cpf) {
             existe = 1;
@@ -127,7 +135,7 @@ void inserir() {
     p.cpf = cpf;
 
     printf("Nome: ");
-    fgets(p.nome, 50, stdin);  // Le o nome do paciente
+    fgets(p.nome, 50, stdin);  
 
     printf("Data de Nascimento:\n");
     p.dataNasc = lerData();  
@@ -149,7 +157,7 @@ void inserir() {
     printf("\nProntuario inserido na posicao %d da tabela (encadeado).\n", id);
 }
 
-
+// Busca e imprime todos os prontuarios com o mesmo CPF
 void buscarTodos(int cpf) {
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
@@ -172,6 +180,7 @@ void buscarTodos(int cpf) {
     }
 }
 
+// Remove todos os prontuarios com o CPF informado
 void remover(int cpf) {
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
@@ -205,6 +214,7 @@ void remover(int cpf) {
     }
 }
 
+// Imprime todos os prontuarios armazenados na tabela
 void imprimirTabela() {
     printf("\n--- Todos os Prontuarios ---\n");
     for (int i = 0; i < TAM; i++) {

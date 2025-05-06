@@ -1,8 +1,10 @@
 #ifndef PRONTUARIO_H
 #define PRONTUARIO_H
 
+//Defini tamanho da tabela
 #define TAM 10
 
+//-------------- Structs --------------
 typedef struct {
     int dia, mes, ano;
 } Data;
@@ -19,7 +21,11 @@ typedef struct no {
     struct no* proximo;
 } No;
 
+//-------------- Lista  --------------
+
 extern No* tabela[TAM];
+
+//-------------- Funcoes --------------
 
 void inicializarTabela();
 void inserir();
