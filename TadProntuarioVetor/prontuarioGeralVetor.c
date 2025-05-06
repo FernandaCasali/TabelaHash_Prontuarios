@@ -67,26 +67,39 @@ void inserir(Prontuario t[]) {
     int id = funcaoHash(p.cpf);
     int original = id;
     int inserido = 0;
+    int posRemovida = -1;
 
-    while (t[id].cpf != 0 && t[id].cpf != -1) {
+    while (t[id].cpf != 0) {
         if (t[id].cpf == p.cpf) {
             printf("\nCPF ja existente. Atualizando prontuario...\n");
             t[id] = p;
             inserido = 1;
-            break;
+            return;
         }
+
+        if (t[id].cpf == -1 && posRemovida == -1) {
+            posRemovida = id; // guarda primeira posicao removida
+        }
+
         id = (id + 1) % TAM;
         if (id == original) {
-            printf("\nTabela cheia! Nao foi possivel inserir.\n");
-            return;
+            break;
         }
     }
 
-    if (!inserido) {
+    if (posRemovida != -1) {
+        t[posRemovida] = p;
+        printf("\nProntuario inserido na posicao %d (reaproveitada).\n", posRemovida);
+    }
+    else if (t[id].cpf == 0) {
         t[id] = p;
         printf("\nProntuario inserido na posicao %d.\n", id);
     }
+    else {
+        printf("\nTabela cheia! Nao foi possivel inserir.\n");
+    }
 }
+
 
 Prontuario* buscar(Prontuario t[], int cpf) {
     int id = funcaoHash(cpf);
