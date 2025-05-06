@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define TAM 10
+#define TAM 10  // Tamanho da tabela hash
 
 // --------------------- Estruturas -----------------------
 
@@ -17,22 +17,23 @@ typedef struct {
     char historico[300];
 } Prontuario;
 
-// Lista encadeada para tratar colisoes:
-// Cada posicao da tabela pode ter varios nos encadeados
+// Estrutura de nó para lista encadeada (tratamento de colisoes)
 typedef struct no {
     Prontuario p;
     struct no* proximo;
 } No;
 
-// A tabela hash agora tem um vetor de ponteiros para listas:
+// Tabela hash com listas encadeadas para cada posicao
 No* tabela[TAM];
 
 // --------------------- Funcoes Auxiliares -----------------------
 
+// Imprime uma data no formato dd/mm/aaaa
 void imprimirData(Data d) {
     printf("%02d/%02d/%04d\n", d.dia, d.mes, d.ano);
 }
 
+// Imprime os dados de um prontuario
 void imprimirProntuario(Prontuario p) {
     printf("\nNome: %s", p.nome);
     printf("CPF: %d\n", p.cpf);
@@ -41,6 +42,7 @@ void imprimirProntuario(Prontuario p) {
     printf("Historico Medico: %s\n", p.historico);
 }
 
+// Le uma data do usuario
 Data lerData() {
     Data d;
     printf("Digite a data (dd mm aaaa): ");
@@ -49,6 +51,7 @@ Data lerData() {
     return d;
 }
 
+// Le os dados de um prontuario do usuario
 Prontuario lerProntuario() {
     Prontuario p;
     printf("\n\n--- Cadastro de Paciente ---\n");
@@ -66,21 +69,24 @@ Prontuario lerProntuario() {
 
 // --------------------- Tabela Hash com Lista Encadeada -----------------------
 
+// Funcao hash baseada no CPF
 int funcaoHash(int cpf) {
     return cpf % TAM;
 }
 
+// Inicializa a tabela com NULL
 void inicializarTabela() {
     for (int i = 0; i < TAM; i++) {
         tabela[i] = NULL;
     }
 }
 
+// Insere um prontuario na tabela hash
 void inserir() {
     Prontuario p = lerProntuario();
     int id = funcaoHash(p.cpf);
 
-    // Verifica se já existe prontuário com esse CPF
+    // Verifica se ja existe um prontuario com o mesmo CPF
     No* atual = tabela[id];
     while (atual != NULL) {
         if (atual->p.cpf == p.cpf) {
@@ -97,31 +103,46 @@ void inserir() {
         atual = atual->proximo;
     }
 
-    // Criar novo nó da lista encadeada:
+    // Cria novo no da lista encadeada
     No* novo = (No*)malloc(sizeof(No));
     if (novo == NULL) {
         printf("Erro ao alocar memoria!\n");
         return;
     }
 
+    // Insere no inicio da lista
     novo->p = p;
-    novo->proximo = tabela[id];  // Insere no início da lista
+    novo->proximo = tabela[id];
     tabela[id] = novo;
 
     printf("\nProntuario inserido na posicao %d da tabela (encadeado).\n", id);
 }
 
+// Busca o primeiro prontuario com o CPF informado (nao usada atualmente)
+Prontuario* buscar(int cpf) {
+    int id = funcaoHash(cpf);
+    No* atual = tabela[id];
 
+    while (atual != NULL) {
+        if (atual->p.cpf == cpf) {
+            return &atual->p;
+        }
+        atual = atual->proximo;
+    }
+
+    return NULL;
+}
+
+// Busca e imprime todos os prontuarios com o CPF informado
 void buscarTodos(int cpf) {
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
     int encontrados = 0;
 
-    // Percorre a lista encadeada e imprime todos os prontuários com o mesmo CPF
     while (atual != NULL) {
         if (atual->p.cpf == cpf) {
             if (encontrados == 0) {
-                printf("\n--- Prontuários Encontrados ---\n");
+                printf("\n--- Prontuarios Encontrados ---\n");
             }
             imprimirProntuario(atual->p);
             printf("----------------------\n");
@@ -131,11 +152,11 @@ void buscarTodos(int cpf) {
     }
 
     if (encontrados == 0) {
-        printf("Nenhum prontuário encontrado com o CPF informado.\n");
+        printf("\nNenhum prontuario encontrado com o CPF informado.\n");
     }
 }
 
-
+// Imprime todos os prontuarios da tabela
 void imprimirTabela() {
     printf("\n--- Todos os Prontuarios ---\n");
     for (int i = 0; i < TAM; i++) {
@@ -158,6 +179,7 @@ int main() {
     inicializarTabela();
 
     do {
+        // Menu principal do sistema
         printf("\n\n--- MENU ---\n");
         printf("1 - Cadastrar paciente\n");
         printf("2 - Buscar por CPF\n");
