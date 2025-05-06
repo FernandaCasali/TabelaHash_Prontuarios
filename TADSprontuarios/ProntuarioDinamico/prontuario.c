@@ -91,59 +91,43 @@ void inserir() {
     int cpf;
     printf("\nDigite o CPF do paciente: ");
     scanf_s("%d", &cpf);
-    getchar(); // Para limpar o buffer de entrada
+    getchar();
 
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
-    int existe = 0;
 
-    // Verifica se o CPF ja existe na lista encadeada
     while (atual != NULL) {
         if (atual->p.cpf == cpf) {
-            existe = 1;
-            break;
+            printf("\nJá existe um prontuario com esse CPF.\n");
+            printf("Deseja atualizar o prontuario existente? (s/n): ");
+            char escolha;
+            scanf_s(" %c", &escolha, 1);
+            getchar();
+
+            if (escolha == 's' || escolha == 'S') {
+                atualizar(cpf);
+            }
+            else {
+                printf("Insercao cancelada.\n");
+            }
+            return;
         }
         atual = atual->proximo;
     }
 
-    if (existe) {
-        printf("\nEsse CPF ja existe. Deseja:\n");
-        printf("a - Atualizar prontuario existente\n");
-        printf("b - Adicionar novo prontuario (mantendo o existente)\n");
-        printf("Escolha (a/b): ");
-
-        char escolha;
-        scanf_s(" %c", &escolha, 1); 
-        getchar();  
-
-        if (escolha == 'a' || escolha == 'A') {
-            atualizar(cpf);
-            return;
-        }
-        else if (escolha != 'b' || escolha != 'B') {
-            // Continuar com a insercao de um novo prontuario mantendo o existente
-            printf("\nAdicionando novo prontuario...\n");
-        }
-        else {
-            printf("Insercao cancelada.\n");
-            return;
-        }
-    }
-
-    // Criacao do novo prontuario
+    // Criar novo prontuário
     Prontuario p;
     p.cpf = cpf;
 
     printf("Nome: ");
-    fgets(p.nome, 50, stdin);  
+    fgets(p.nome, 50, stdin);
 
     printf("Data de Nascimento:\n");
-    p.dataNasc = lerData();  
+    p.dataNasc = lerData();
 
-    printf("Historico Medico (resumo): ");
-    fgets(p.historico, 300, stdin);  
+    printf("Histórico Medico (resumo): ");
+    fgets(p.historico, 300, stdin);
 
-    // Criacao do novo no para o prontuario
     No* novo = (No*)malloc(sizeof(No));
     if (novo == NULL) {
         printf("Erro ao alocar memoria!\n");
@@ -151,10 +135,10 @@ void inserir() {
     }
 
     novo->p = p;
-    novo->proximo = tabela[id]; 
-    tabela[id] = novo;  // Atribui o novo no à tabela no índice devida
+    novo->proximo = tabela[id];
+    tabela[id] = novo;
 
-    printf("\nProntuario inserido na posicao %d da tabela (encadeado).\n", id);
+    printf("\n Prontuario inserido com sucesso na posicao %d da tabela.\n", id);
 }
 
 // Busca e imprime todos os prontuarios com o mesmo CPF

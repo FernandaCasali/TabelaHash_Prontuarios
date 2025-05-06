@@ -111,37 +111,27 @@ void inserir() {
 
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
-    int existe = 0;
 
     while (atual != NULL) {
         if (atual->p.cpf == cpf) {
-            existe = 1;
-            break;
+            printf("\nJá existe um prontuario com esse CPF.\n");
+            printf("Deseja atualizar o prontuario existente? (s/n): ");
+            char escolha;
+            scanf_s(" %c", &escolha, 1);
+            getchar();
+
+            if (escolha == 's' || escolha == 'S') {
+                atualizar(cpf);
+            }
+            else {
+                printf("Insercao cancelada.\n");
+            }
+            return;
         }
         atual = atual->proximo;
     }
 
-    if (existe) {
-        printf("\nEsse CPF ja existe. Deseja:\n");
-        printf("a - Atualizar prontuario existente\n");
-        printf("b - Adicionar novo prontuario (mantendo o existente)\n");
-        printf("Escolha (a/b): ");
-
-        char escolha;
-        scanf_s(" %c", &escolha, 1);
-        getchar();
-
-        if (escolha == 'a' || escolha == 'A') {
-            atualizar(cpf);
-            return;
-        }
-        else if (escolha != 'b' && escolha != 'B') {
-            printf("Insercao cancelada.\n");
-            return;
-        }
-    }
-
-    // Criar novo prontuario
+    // Criar novo prontuário
     Prontuario p;
     p.cpf = cpf;
 
@@ -151,7 +141,7 @@ void inserir() {
     printf("Data de Nascimento:\n");
     p.dataNasc = lerData();
 
-    printf("Historico Medico (resumo): ");
+    printf("Histórico Medico (resumo): ");
     fgets(p.historico, 300, stdin);
 
     No* novo = (No*)malloc(sizeof(No));
@@ -164,9 +154,10 @@ void inserir() {
     novo->proximo = tabela[id];
     tabela[id] = novo;
 
-    printf("\nProntuario inserido na posicao %d da tabela (encadeado).\n", id);
+    printf("\n Prontuario inserido com sucesso na posicao %d da tabela.\n", id);
 }
 
+// Busca todos os prontuarios com o mesmo CPF
 void buscarTodos(int cpf) {
     int id = funcaoHash(cpf);
     No* atual = tabela[id];
