@@ -118,20 +118,6 @@ void inserir() {
     printf("\nProntuario inserido na posicao %d da tabela (encadeado).\n", id);
 }
 
-// Busca o primeiro prontuario com o CPF informado (nao usada atualmente)
-Prontuario* buscar(int cpf) {
-    int id = funcaoHash(cpf);
-    No* atual = tabela[id];
-
-    while (atual != NULL) {
-        if (atual->p.cpf == cpf) {
-            return &atual->p;
-        }
-        atual = atual->proximo;
-    }
-
-    return NULL;
-}
 
 // Busca e imprime todos os prontuarios com o CPF informado
 void buscarTodos(int cpf) {
