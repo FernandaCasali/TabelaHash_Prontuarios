@@ -5,6 +5,9 @@
 
 No* tabela[TAM];
 
+// ---------------------- Funcoes auxiliares -----------------------
+
+
 // Imprime uma data no formato dd/mm/aaaa
 void imprimirData(Data d) {
     printf("%02d/%02d/%04d\n", d.dia, d.mes, d.ano);
@@ -27,6 +30,8 @@ Data lerData() {
     getchar();
     return d;
 }
+
+// ---------------------- Funcoes da tabela hash -----------------------
 
 // Funcao hash que calcula o indice com base no CPF do prontuario
 int funcaoHash(int cpf) {
