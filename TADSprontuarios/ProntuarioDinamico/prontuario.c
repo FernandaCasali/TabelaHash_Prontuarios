@@ -22,28 +22,28 @@ void imprimirProntuario(Prontuario p) {
 // Le uma data do usuario
 Data lerData() {
     Data d;
-    printf("Digite a data (dd mm aaaa): ");
+    printf("(dd mm aaaa): ");
     scanf_s("%d%d%d", &d.dia, &d.mes, &d.ano);
     getchar();
     return d;
 }
 
-// Funcao hash para calcular o indice com base no CPF
+// Funcao hash que calcula o indice com base no CPF do prontuario
 int funcaoHash(int cpf) {
-    return cpf % TAM;
+    return cpf % TAM;  // A funcao hash e baseada no modulo do CPF pelo tamanho da tabela
 }
 
-// Inicializa a tabela hash com NULL
+// Inicializa a tabela hash com NULL, indicando que as posicoes estao vazias
 void inicializarTabela() {
     for (int i = 0; i < TAM; i++) {
-        tabela[i] = NULL;
+        tabela[i] = NULL;  // Marca todas as posicoes como NULL (tabela vazia)
     }
 }
 
-// Atualiza um prontuario existente com base no CPF
+// Atualiza um prontuario existente baseado no CPF
 void atualizar(int cpf) {
-    int id = funcaoHash(cpf);
-    No* atual = tabela[id];
+    int id = funcaoHash(cpf);  // Calcula o indice usando a funcao hash
+    No* atual = tabela[id];  // Obtem o no na posicao correspondente na tabela
 
     while (atual != NULL) {
         if (atual->p.cpf == cpf) {
@@ -78,9 +78,9 @@ void atualizar(int cpf) {
             }
 
             printf("\nProntuario atualizado com sucesso!\n");
-            return;
+            return;  // Retorna apos a atualizacao
         }
-        atual = atual->proximo;
+        atual = atual->proximo;  // Vai para o proximo no, caso o CPF nao seja encontrado
     }
 
     printf("\nNenhum prontuario encontrado com o CPF informado.\n");
@@ -93,12 +93,13 @@ void inserir() {
     scanf_s("%d", &cpf);
     getchar();
 
-    int id = funcaoHash(cpf);
-    No* atual = tabela[id];
+    int id = funcaoHash(cpf);  // Calcula o indice usando a funcao hash
+    No* atual = tabela[id];  // Obtem o no na posicao correspondente na tabela
 
+    // Verifica se ja existe um prontuario com o mesmo CPF
     while (atual != NULL) {
         if (atual->p.cpf == cpf) {
-            printf("\nJá existe um prontuario com esse CPF.\n");
+            printf("\nJa existe um prontuario com esse CPF.\n");
             printf("Deseja atualizar o prontuario existente? (s/n): ");
             char escolha;
             scanf_s(" %c", &escolha, 1);
@@ -112,10 +113,10 @@ void inserir() {
             }
             return;
         }
-        atual = atual->proximo;
+        atual = atual->proximo;  // Vai para o proximo no
     }
 
-    // Criar novo prontuário
+    // Caso o CPF nao exista, cria um novo prontuario
     Prontuario p;
     p.cpf = cpf;
 
@@ -125,18 +126,19 @@ void inserir() {
     printf("Data de Nascimento:\n");
     p.dataNasc = lerData();
 
-    printf("Histórico Medico (resumo): ");
+    printf("Historico Medico (resumo): ");
     fgets(p.historico, 300, stdin);
 
+    // Cria um novo no para armazenar o prontuario
     No* novo = (No*)malloc(sizeof(No));
     if (novo == NULL) {
         printf("Erro ao alocar memoria!\n");
-        return;
+        return;  // Retorna caso haja erro na alocacao de memoria
     }
 
-    novo->p = p;
-    novo->proximo = tabela[id];
-    tabela[id] = novo;
+    novo->p = p;  // Atribui os dados do prontuario ao novo no
+    novo->proximo = tabela[id];  // Aponta para o proximo no (se houver)
+    tabela[id] = novo;  // Insere o novo no na tabela, na posicao calculada
 
     printf("\n Prontuario inserido com sucesso na posicao %d da tabela.\n", id);
 }
@@ -171,22 +173,23 @@ void remover(int cpf) {
     No* anterior = NULL;
     int removidos = 0;
 
+    // Percorre a lista encadeada 
     while (atual != NULL) {
         if (atual->p.cpf == cpf) {
-            No* temp = atual;
+            No* temp = atual;  // Salva o no a ser removido
             if (anterior == NULL) {
-                tabela[id] = atual->proximo;
+                tabela[id] = atual->proximo;  // Caso seja o primeiro no da lista
             }
             else {
-                anterior->proximo = atual->proximo;
+                anterior->proximo = atual->proximo;  // Remove o no da lista
             }
-            atual = atual->proximo;
-            free(temp);
-            removidos++;
+            atual = atual->proximo;  // Vai para o proximo no
+            free(temp);  // Libera a memoria do no removido
+            removidos++;  // Incrementa o contador de removidos
         }
         else {
             anterior = atual;
-            atual = atual->proximo;
+            atual = atual->proximo;  // Vai para o proximo no
         }
     }
 
@@ -201,10 +204,10 @@ void remover(int cpf) {
 // Imprime todos os prontuarios armazenados na tabela
 void imprimirTabela() {
     printf("\n--- Todos os Prontuarios ---\n");
-    for (int i = 0; i < TAM; i++) {
+    for (int i = 0; i < TAM; i++) {  // Percorre a tabela de indices
         printf("\n[%d]:\n", i);
-        No* atual = tabela[i];
-        while (atual != NULL) {
+        No* atual = tabela[i];  // Obtem o no na posicao atual
+        while (atual != NULL) {  // Imprime todos os prontuarios em cada lista encadeada
             imprimirProntuario(atual->p);
             atual = atual->proximo;
             printf("----------------------\n");
