@@ -67,7 +67,7 @@ void atualizar(int cpf) {
             printf("Data de nascimento atual: ");
             imprimirData(atual->p.dataNasc);
             printf("Deseja alterar a data de nascimento? (s/n): ");
-            scanf_s(" %c", &opcao);
+            scanf_s(" %c", &opcao, 1);
             getchar();
             if (opcao == 's' || opcao == 'S') {
                 atual->p.dataNasc = lerData();
@@ -75,7 +75,7 @@ void atualizar(int cpf) {
 
             printf("Historico atual: %s", atual->p.historico);
             printf("Deseja alterar o historico medico? (s/n): ");
-            scanf_s(" %c", &opcao);
+            scanf_s(" %c", &opcao, 1);
             getchar();
             if (opcao == 's' || opcao == 'S') {
                 printf("Novo historico: ");
