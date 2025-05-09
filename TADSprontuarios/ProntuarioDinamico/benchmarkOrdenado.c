@@ -1,4 +1,4 @@
-#include <windows.h>  // Para alta precisão de tempo
+#include <windows.h>  // Para alta precisao de tempo
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -25,7 +25,7 @@ Data gerarDataAleatoria() {
 void testeInsercao(int total) {
     for (int i = 0; i < total; i++) {
         Prontuario p;
-        p.cpf = 100000000 + i;
+        p.cpf = 10 + i;
         gerarNomeSequencial(p.nome, i + 1);
         p.dataNasc = gerarDataAleatoria();
         gerarHistoricoAleatorio(p.historico);
@@ -40,14 +40,14 @@ void testeInsercao(int total) {
 
 void testeBusca(int total) {
     for (int i = 0; i < total; i++) {
-        int cpf = 100000000 + i;
+        int cpf = 10 + i;
         buscarTodos(cpf);
     }
 }
 
 void testeAtualizacao(int total) {
     for (int i = 0; i < total; i++) {
-        int cpf = 100000000 + i;
+        int cpf = 10 + i;
         int id = funcaoHash(cpf);
         No* atual = tabela[id];
         while (atual != NULL) {
@@ -64,7 +64,7 @@ void testeAtualizacao(int total) {
 
 void testeRemocao(int total) {
     for (int i = 0; i < total; i++) {
-        int cpf = 100000000 + i;
+        int cpf = 10 + i;
         remover(cpf);
     }
 }
@@ -89,19 +89,19 @@ int main() {
 
     printf("Inserindo %d elementos...\n", NUM_TESTES);
     double tempo_insercao = medirTempo(testeInsercao, NUM_TESTES);
-    printf("Insercao concluída.\n");
+    printf("Insercao concluida.\n");
 
     printf("Buscando %d elementos...\n", NUM_TESTES);
     double tempo_busca = medirTempo(testeBusca, NUM_TESTES);
-    printf("Busca concluída.\n");
+    printf("Busca concluida.\n");
 
     printf("Atualizando %d elementos...\n", NUM_TESTES);
     double tempo_atualizacao = medirTempo(testeAtualizacao, NUM_TESTES);
-    printf("Atualizacao concluída.\n");
+    printf("Atualizacao concluida.\n");
 
     printf("Removendo %d elementos...\n", NUM_TESTES);
     double tempo_remocao = medirTempo(testeRemocao, NUM_TESTES);
-    printf("Remocao concluída.\n");
+    printf("Remocao concluida.\n");
 
     double tempo_total = tempo_insercao + tempo_busca + tempo_atualizacao + tempo_remocao;
 
