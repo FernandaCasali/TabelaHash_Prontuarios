@@ -1,12 +1,13 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include "prontuario.h"  // Sua implementacao da tabela hash com lista
 
-#define NUM_TESTES 5000
+#define NUM_TESTES 100
 
-void gerarNomeAleatorio(char* nome) {
-    printf(nome, "Paciente_%d\n", rand() % 100000);
+void gerarNomeAleatorio(char* nome, int numero) {
+    printf("Paciente %d\n", numero);
 }
 
 void gerarHistoricoAleatorio(char* historico) {
@@ -30,7 +31,7 @@ void testeAtualizacao(int total) {
         while (atual != NULL) {
             if (atual->p.cpf == cpf) {
                 // Atualiza alguns campos diretamente
-                gerarNomeAleatorio(atual->p.nome);
+                gerarNomeAleatorio(atual->p.nome, NUM_TESTES);
                 atual->p.dataNasc = gerarDataAleatoria();
                 gerarHistoricoAleatorio(atual->p.historico);
                 break;
@@ -45,7 +46,7 @@ void testeInsercao(int total) {
     for (int i = 0; i < total; i++) {
         Prontuario p;
         p.cpf = 100000000 + i;
-        gerarNomeAleatorio(p.nome);
+        gerarNomeAleatorio(p.nome, NUM_TESTES);
         p.dataNasc = gerarDataAleatoria();
         gerarHistoricoAleatorio(p.historico);
 
@@ -118,3 +119,4 @@ int main() {
 
     return 0;
 }
+
