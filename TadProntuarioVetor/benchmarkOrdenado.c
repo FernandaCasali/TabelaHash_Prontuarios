@@ -11,11 +11,39 @@ int cpfs_testes[NUM_TESTES];
 
 // Funções auxiliares para gerar dados de teste
 void gerarNomeSequencial(char* nome, int numero) {
-    printf("Paciente %d", numero);
+    // Copia "Paciente " no início do nome
+    strcpy_s(nome, 50, "Paciente ");
+
+    // Converte o número para string manualmente
+    char numeroStr[12]; // Espaço para até 10 dígitos + null
+    int i = 0;
+
+    if (numero == 0) {
+        numeroStr[i++] = '0';
+    }
+    else {
+        int temp = numero;
+        while (temp > 0 && i < 11) {
+            numeroStr[i++] = (temp % 10) + '0';
+            temp /= 10;
+        }
+        // Inverter a string número
+        for (int j = 0; j < i / 2; j++) {
+            char c = numeroStr[j];
+            numeroStr[j] = numeroStr[i - 1 - j];
+            numeroStr[i - 1 - j] = c;
+        }
+    }
+    numeroStr[i] = '\0';
+
+    // Concatena o número convertido ao final do nome
+    strcat_s(nome, 50, numeroStr);
 }
 
+
+
 void gerarHistoricoAleatorio(char* historico) {
-    printf(historico, "Histórico médico gerado automaticamente.");
+    strcpy_s(historico, 100, "Histórico medico gerado automaticamente.");
 }
 
 Data gerarDataAleatoria() {
@@ -28,8 +56,9 @@ Data gerarDataAleatoria() {
 
 Prontuario gerarProntuario(int numero) {
     Prontuario p;
-    p.cpf = 100000000 + numero;  // CPFs sequenciais
+    p.cpf = 10000 + numero;  // CPFs sequenciais
     cpfs_testes[numero] = p.cpf;  // Armazena para uso posterior
+    char nome[50];
     gerarNomeSequencial(p.nome, numero);
     p.dataNas = gerarDataAleatoria();
     gerarHistoricoAleatorio(p.historico);
@@ -120,7 +149,13 @@ double medirTempo(void (*funcao)(Prontuario[]), Prontuario tabela[]) {
 int main() {
     srand((unsigned int)time(NULL));
 
-    Prontuario tabela[TAM];
+    // Aloca a tabela no heap
+    Prontuario* tabela = (Prontuario*)calloc(TAM, sizeof(Prontuario));
+    if (tabela == NULL) {
+        fprintf(stderr, "Erro ao alocar memoria para a tabela.\n");
+        return 1;
+    }
+
     inicializarTabela(tabela);
 
     printf("=== Benchmark Automatizado ===\n");
@@ -143,14 +178,18 @@ int main() {
     double tempo_remocao = medirTempo(testeRemocao, tabela);
 
     // Resultados
-    printf("\n=== Resultados (tempo em milissegundos) ===\n");
-    printf("Insercao:    %.6f ms\n", tempo_insercao );
-    printf("Busca:       %.6f ms\n", tempo_busca );
-    printf("Atualizacao: %.6f ms\n", tempo_atualizacao );
-    printf("Remocao:     %.6f ms\n", tempo_remocao );
+    printf("\n=== Resultados de %d entradas ===\n", NUM_TESTES);
+    printf("Insercao:    %.6f ms\n", tempo_insercao);
+    printf("Busca:       %.6f ms\n", tempo_busca);
+    printf("Atualizacao: %.6f ms\n", tempo_atualizacao);
+    printf("Remocao:     %.6f ms\n", tempo_remocao);
     printf("----------------------------------------\n");
     printf("TOTAL:       %.6f ms\n",
-        (tempo_insercao + tempo_busca + tempo_atualizacao + tempo_remocao) );
+        (tempo_insercao + tempo_busca + tempo_atualizacao + tempo_remocao));
+
+
+    // Libera a memória alocada no heap
+    free(tabela);
 
     return 0;
 }
