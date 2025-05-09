@@ -2,16 +2,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "prontuario.h"  // Sua TAD com a hash encadeada
+#include "prontuario.h"
 
-#define NUM_TESTES 100  // Você pode ajustar aqui
+#define NUM_TESTES 1000000
 
+int cpfs_testes[NUM_TESTES];
+int indices[NUM_TESTES];
+
+// Funções auxiliares
 void gerarNomeSequencial(char* nome, int numero) {
-    printf("Paciente %d\n", numero);;
+    strcpy_s(nome, 50, "Paciente ");
+    char numeroStr[12];
+    sprintf_s(numeroStr, 12, "%d", numero);
+    strcat_s(nome, 50, numeroStr);
 }
 
 void gerarHistoricoAleatorio(char* historico) {
-    printf(historico, "Historico medico gerado automaticamente.");
+    strcpy_s(historico, 300, "Historico medico gerado automaticamente.");
 }
 
 Data gerarDataAleatoria() {
@@ -22,91 +29,155 @@ Data gerarDataAleatoria() {
     return d;
 }
 
-int gerarCpfAleatorio() {
-    return 10000 + rand() % 90000;  // Gera CPF fictício de 5 dígitos
+Prontuario gerarProntuario(int numero) {
+    Prontuario p;
+    p.cpf = 10000 + numero;
+    cpfs_testes[numero] = p.cpf;
+    gerarNomeSequencial(p.nome, numero);
+    p.dataNasc = gerarDataAleatoria();
+    gerarHistoricoAleatorio(p.historico);
+    return p;
 }
 
-void testeInsercao(int total, int* cpfs) {
-    for (int i = 0; i < total; i++) {
-        Prontuario p;
-        p.cpf = cpfs[i];
-        gerarNomeSequencial(p.nome, i + 1);
-        p.dataNasc = gerarDataAleatoria();
-        gerarHistoricoAleatorio(p.historico);
-
-        int id = funcaoHash(p.cpf);
-        No* novo = (No*)malloc(sizeof(No));
-        novo->p = p;
-        novo->proximo = tabela[id];
-        tabela[id] = novo;
+void embaralharIndices(int* vetor, int tamanho) {
+    for (int i = tamanho - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+        int temp = vetor[i];
+        vetor[i] = vetor[j];
+        vetor[j] = temp;
     }
 }
 
-void testeBusca(int total, int* cpfs) {
-    for (int i = 0; i < total; i++) {
-        buscarTodos(cpfs[i]);
+// Versão benchmark
+void inserir_benchmark(Prontuario p) {
+    int id = funcaoHash(p.cpf);
+    No* atual = tabela[id];
+
+    while (atual != NULL) {
+        if (atual->p.cpf == p.cpf) {
+            atual->p = p;
+            return;
+        }
+        atual = atual->proximo;
     }
+
+    No* novo = (No*)malloc(sizeof(No));
+    novo->p = p;
+    novo->proximo = tabela[id];
+    tabela[id] = novo;
 }
 
-void testeAtualizacao(int total, int* cpfs) {
-    for (int i = 0; i < total; i++) {
-        int id = funcaoHash(cpfs[i]);
-        No* atual = tabela[id];
-        while (atual != NULL) {
-            if (atual->p.cpf == cpfs[i]) {
-                gerarNomeSequencial(atual->p.nome, i + 1);
-                atual->p.dataNasc = gerarDataAleatoria();
-                gerarHistoricoAleatorio(atual->p.historico);
-                break;
+Prontuario* buscar_benchmark(int cpf) {
+    int id = funcaoHash(cpf);
+    No* atual = tabela[id];
+    while (atual != NULL) {
+        if (atual->p.cpf == cpf) {
+            return &atual->p;
+        }
+        atual = atual->proximo;
+    }
+    return NULL;
+}
+
+void remover_benchmark(int cpf) {
+    int id = funcaoHash(cpf);
+    No* atual = tabela[id];
+    No* anterior = NULL;
+
+    while (atual != NULL) {
+        if (atual->p.cpf == cpf) {
+            if (anterior == NULL) {
+                tabela[id] = atual->proximo;
             }
-            atual = atual->proximo;
+            else {
+                anterior->proximo = atual->proximo;
+            }
+            free(atual);
+            return;
+        }
+        anterior = atual;
+        atual = atual->proximo;
+    }
+}
+
+// Testes embaralhados
+void testeInsercao() {
+    embaralharIndices(indices, NUM_TESTES);
+    for (int i = 0; i < NUM_TESTES; i++) {
+        int idx = indices[i];
+        Prontuario p = gerarProntuario(idx);
+        inserir_benchmark(p);
+    }
+}
+
+void testeBusca() {
+    embaralharIndices(indices, NUM_TESTES);
+    for (int i = 0; i < NUM_TESTES; i++) {
+        buscar_benchmark(cpfs_testes[indices[i]]);
+    }
+}
+
+void testeAtualizacao() {
+    embaralharIndices(indices, NUM_TESTES);
+    for (int i = 0; i < NUM_TESTES; i++) {
+        Prontuario* p = buscar_benchmark(cpfs_testes[indices[i]]);
+        if (p != NULL) {
+            snprintf(p->historico, 300, "Historico atualizado no teste %d", i);
         }
     }
 }
 
-void testeRemocao(int total, int* cpfs) {
-    for (int i = 0; i < total; i++) {
-        remover(cpfs[i]);
+void testeRemocao() {
+    embaralharIndices(indices, NUM_TESTES);
+    for (int i = 0; i < NUM_TESTES; i++) {
+        remover_benchmark(cpfs_testes[indices[i]]);
     }
 }
 
-double medirTempo(void (*funcao)(int, int*), int total, int* cpfs) {
+// Medição de tempo
+double medirTempo(void (*funcao)()) {
     LARGE_INTEGER inicio, fim, freq;
     QueryPerformanceFrequency(&freq);
     QueryPerformanceCounter(&inicio);
 
-    funcao(total, cpfs);
+    funcao();
 
     QueryPerformanceCounter(&fim);
     return (double)(fim.QuadPart - inicio.QuadPart) / freq.QuadPart;
 }
 
+// Programa principal
 int main() {
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     inicializarTabela();
 
-    // Gerar CPFs aleatórios
-    int* cpfs = malloc(NUM_TESTES * sizeof(int));
+    // Inicializa os índices
     for (int i = 0; i < NUM_TESTES; i++) {
-        cpfs[i] = gerarCpfAleatorio();
+        indices[i] = i;
     }
 
-    printf("Iniciando benchmark...\n");
+    printf("=== Benchmark Encadeamento Separado ===\n");
+    printf("TAM: %d | Testes: %d | Fator de carga: %.2f%%\n\n", TAM, NUM_TESTES, (NUM_TESTES / (float)TAM) * 100);
 
-    double tempo_insercao = medirTempo(testeInsercao, NUM_TESTES, cpfs);
-    double tempo_busca = medirTempo(testeBusca, NUM_TESTES, cpfs);
-    double tempo_atualizacao = medirTempo(testeAtualizacao, NUM_TESTES, cpfs);
-    double tempo_remocao = medirTempo(testeRemocao, NUM_TESTES, cpfs);
+    printf("1. Teste de Insercao...\n");
+    double t_insercao = medirTempo(testeInsercao);
 
-    double tempo_total = tempo_insercao + tempo_busca + tempo_atualizacao + tempo_remocao;
+    printf("2. Teste de Busca...\n");
+    double t_busca = medirTempo(testeBusca);
 
-    printf("\n--- Resultados do Benchmark ---\n");
-    printf("Tempo de insercao:    %.6f segundos\n", tempo_insercao);
-    printf("Tempo de busca:       %.6f segundos\n", tempo_busca);
-    printf("Tempo de atualizacao: %.6f segundos\n", tempo_atualizacao);
-    printf("Tempo de remocao:     %.6f segundos\n", tempo_remocao);
-    printf("Tempo total:          %.6f segundos\n", tempo_total);
+    printf("3. Teste de Atualizacao...\n");
+    double t_atualizacao = medirTempo(testeAtualizacao);
 
-    free(cpfs);
+    printf("4. Teste de Remocao...\n");
+    double t_remocao = medirTempo(testeRemocao);
+
+    printf("\n=== Resultados de %d entradas ===\n", NUM_TESTES);
+    printf("Insercao:    %.6f s\n", t_insercao);
+    printf("Busca:       %.6f s\n", t_busca);
+    printf("Atualizacao: %.6f s\n", t_atualizacao);
+    printf("Remocao:     %.6f s\n", t_remocao);
+    printf("-------------------------\n");
+    printf("Total:       %.6f s\n", t_insercao + t_busca + t_atualizacao + t_remocao);
+
     return 0;
 }
